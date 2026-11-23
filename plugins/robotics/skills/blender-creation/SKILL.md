@@ -17,6 +17,14 @@ metadata:
   publisher: google
 ---
 
+## Host compatibility
+
+Read [agent runtime conventions](../../rules/agent_runtime.md) before first
+execution. Resolve scripts relative to this skill directory; no specific agent
+SDK, model vendor, or UI is required. Install only dependencies used by the
+selected operation. Preserve hardware safety limits and operator checkpoints.
+
+
 # Authoring 3D MuJoCo Assets from Scratch in Blender (`bpy` / `bmesh` + PBR)
 
 > [!IMPORTANT]
@@ -55,12 +63,12 @@ By default, the skill executes the full end-to-end pipeline: auto-detected artic
 - **`Rigid-Only`**: Forces `0` joints, authoring the object as a single rigid body.
 - **`Skip Physics Audit` / `Fast Audit`**: Skips the 10-scenario dynamic physics simulation suite in Step 7.3 (relying only on Step 7.1 static hygiene & collision alignment checks).
 
-1. **If you are the top-level / parent conversation**:
-   - Spawn a `self` subagent (`Model: "inherit"`) via `invoke_subagent` to build and verify the asset, passing all user-specified instructions, URLs, and overrides, `Parent Conversation ID: <parent_conv_id>`, and the target asset output parent directory, and instructing the subagent to read this `blender-creation` skill, [`rules/mujoco_asset_standards.md`][asset-standards], [`mujoco-audit/SKILL.md`](../mujoco-audit/SKILL.md), and [`mujoco-showcase-shot/SKILL.md`](../mujoco-showcase-shot/SKILL.md). Do **not** instruct the subagent to write scratch/intake files inside the parent conversation's `brain/<parent_conv_id>/` directory (macOS Seatbelt sandboxing blocks cross-conversation `brain/` access with `PermissionError`); let the subagent use its own `<ArtifactDir>/scratch/` and return the finished asset and preview paths.
-   - **When the subagent finishes**: Follow **Step 7.6** ([`mujoco-studio-sidecar/SKILL.md`](../mujoco-studio-sidecar/SKILL.md)) in the top-level conversation to launch (or reuse) the MuJoCo Studio Web sidecar daemon (`studiod.py`) pointed at the finished asset directory (`--workspace_dir=<asset_dir>`) and verify `/_studio/status` (`"ok": true`, `"daemon_connected": true`). Launch `studiod.py` from the top-level conversation rather than inside the builder subagent so the background daemon is not reaped when the subagent exits. In your final response, first present the finished asset path, model summary (dimensions, mass, joints, visual/collision breakdown, audit status), side-by-side comparison, and turntable video (unless skipped via `Fast (No Turntable)`, briefly noting in a 1-line caption that the reel shows a full 360° textured visual spin followed by translucent physics collision hull inspection), and **place `[MuJoCo Studio](sidecar://robotics/mujoco_studio/)` (plus `http://127.0.0.1:<http_port>/` from `$SESSION_FILE` if the Node sidecar proxy is not active) as the very last item at the bottom of your response** so the interactive sidecar pill is never missed at the top.
+Execute Sections 1.1 through 7.5 directly. Delegation is optional when the
+host supports it and the task permits it; pass the requested outputs and return
+finished asset paths. Keep temporary work in `<ArtifactDir>/scratch/`. Launch
+any long-lived Studio process from the session responsible for its lifetime.
+After verification, use Step 7.6 to present a browser-based preview.
 
-2. **If you are already the spawned Main Builder Subagent**:
-   - Do **not** spawn a nested build subagent—execute **Sections 1.1 through 7.5** directly (you may still invoke the read-only `browser` subagent during Step 1.1 if a product URL requires client-side JS rendering). Keep all scratch/intake files in **this subagent's own** `<ArtifactDir>/scratch/` so sandboxed `run_command` steps have local read/write access without `PermissionError`. Do **not** run **Step 7.6** (`studiod.py`) inside the subagent; instead, return the finished `<asset_dir>` path, model summary, comparison images, and turntable video path to the parent conversation so the parent conversation launches `studiod.py` and presents the Studio link.
    - **Ensure `uv` and Headless Blender (`4.2+`) Are Installed Locally (macOS & Linux)**:
      ```bash
      uv --version
@@ -88,13 +96,13 @@ By default, the skill executes the full end-to-end pipeline: auto-detected artic
 1. **Product URL & Reference Intake (`<= 8` Image Reads)**:
    - Never guess product identity, category, or dimensions from a URL path slug (e.g., `/Walnut-Elegant-Design-Coffee-Products/dp/...` may be a truncated SEO slug rather than a coffee table).
    - **When a product URL is provided**:
-     1. Invoke the read-only `browser` subagent to navigate to `<product_url>` on behalf of the user. Inspect the live rendered page just as a human designer would:
+     1. Use the host browser tool (or an authorized browser worker) to navigate to `<product_url>` on behalf of the user. Inspect the live rendered page just as a human designer would:
         - Extract the verified product title, materials, mechanism descriptions, and dimensional specs (`L × W × H` in `mm` and bare-product mass in `kg`, cross-checking retail `Item Weight` vs packaged shipping weight).
         - Identify high-resolution product gallery / carousel image URLs.
      2. **If access is blocked by an interactive CAPTCHA or security gate**: stop without attempting to circumvent the gate and ask the user for the product dimensions, specifications, or reference photos directly.
      3. Download the collected high-resolution gallery images into `<ArtifactDir>/scratch/intake/ref_*.jpg` (e.g. using `curl` or a minimal inline download script).
-   - **When no URL is provided (text-only query)**: Look up bare-product `L x W x H` (`mm`) and mass (`kg`) via `search_web` (or invoke the `browser` subagent if `search_web` returns only bare redirect links without snippets). Cross-check retail `Item Weight` against dimensions and material density.
-   - **Composite Sheets (`<= 8` Image Reads)**: Never call `read_file` on dozens of individual frames. Stitch the downloaded `ref_*.jpg` photos and sub-feature crops into `ref_contact_sheet` and `ref_details_grid` via `abu.build_ref_contact_and_detail_sheets`, then inspect those composite sheets with `read_file`.
+   - **When no URL is provided (text-only query)**: Look up bare-product `L x W x H` (`mm`) and mass (`kg`) via the host's web search tool (or use the host browser if search results lack usable page content). Cross-check retail `Item Weight` against dimensions and material density.
+   - **Composite Sheets (`<= 8` Image Reads)**: Never call the host's file/image inspection tool on dozens of individual frames. Stitch the downloaded `ref_*.jpg` photos and sub-feature crops into `ref_contact_sheet` and `ref_details_grid` via `abu.build_ref_contact_and_detail_sheets`, then inspect those composite sheets with the host's file/image inspection tool.
 2. **Sample Photometric RGB Percentiles Directly from Reference Crops (`rgb_sample_boxes`)**:
    - Do **not** invent `RGB` values from verbal category names (*"red plastic"*, *"black rubber"*, *"green plush"*). Pass `rgb_sample_boxes=[('main_shell', ref_path, (x0, y0, x1, y1)), ...]` to `abu.build_ref_contact_and_detail_sheets` to measure `[p25, p50, p75]` sRGB tuples directly from uniform interior surface patches (excluding specular hotspots and cast shadows).
 3. **Write a `<= 25`-Line Form Brief & Named Parameter Block `P` (`<= 40` Named Dimensions)**:
@@ -400,7 +408,7 @@ render_showcase_shot.render_side_by_side_comparison(
 
 ### 7.2 Difference-Driven Self-Review (Iterative Intermediate & Final Critique)
 
-- Inspect `blender_diag_sheet.jpg`, `ref_vs_clay.jpg` (during geometry blockout), `ref_vs_filament_comparison.jpg`, `render_details_grid.jpg`, and `six_view_inspection_sheet.jpg` directly with `read_file`.
+- Inspect `blender_diag_sheet.jpg`, `ref_vs_clay.jpg` (during geometry blockout), `ref_vs_filament_comparison.jpg`, `render_details_grid.jpg`, and `six_view_inspection_sheet.jpg` directly with the host's file/image inspection tool.
 - Before every geometry or material revision, explicitly list the **top 3 visual discrepancies** between the reference photo and the render:
   1. **View** (e.g., `View 1 Right (-Y)` or `View 2 Front-Right 3/4`),
   2. **Feature** (e.g., front-top chamfer slope, upper rim thickness, actuator button height),
@@ -473,13 +481,10 @@ Once the asset bundle (`<asset_dir>/model.xml`, `meshes/*.obj`, `textures/*.png`
    SIDECAR_FILE="${SESSION_DIR%/}/mujoco_studio_sidecar_$(id -u).json"
    ```
 
-   - Check whether the Antigravity Node sidecar proxy (`main.mjs`) is active
-     (`$PLUGIN_DATA/sidecar.json`,
-     `$ANTIGRAVITY_EXECUTABLE_DATA_DIR/sidecar.json`, or `$SIDECAR_FILE`). If no
-     sidecar discovery file exists (for example, on Antigravity clients where
-     `enable-ui-sidecars` is disabled), add `--open_browser` so `studiod.py`
-     also opens the local WebViewer tab automatically.
-   - Launch [`studiod.py`](../mujoco-studio-sidecar/scripts/studiod.py) in the background (`IsDaemon: true`, and `BypassSandbox: true` if running inside a sandboxed shell so loopback IPC is accessible) from the **top-level / parent conversation**:
+   - Launch [`studiod.py`](../mujoco-studio-sidecar/scripts/studiod.py) with
+     the host's supported background-process mechanism. Add `--open_browser`
+     for a local desktop; for a remote host, forward the reported HTTP port.
+     Follow the host's permissions; do not bypass its sandbox.
 
    ```bash
    ~/.venvs/mujoco-studio/bin/python "$PLUGIN_DIR/skills/mujoco-studio-sidecar/scripts/studiod.py" \
@@ -491,9 +496,10 @@ Once the asset bundle (`<asset_dir>/model.xml`, `meshes/*.obj`, `textures/*.png`
    - Read `control_port` and `http_port` from `$SESSION_FILE` and query `curl --noproxy '*' -s http://127.0.0.1:<control_port>/_studio/status` to confirm `"ok": true` and `"daemon_connected": true` (note: `"daemon_connected"` and `"http_port"` are reported by `/_studio/status` and `$SESSION_FILE`, while `status_file` on disk records `"ok"` and scene load status).
    - If you refine `model.xml`, `meshes/*.obj`, or `textures/*.png` after launching, MuJoCo Studio automatically watches and hot-reloads the model in place — re-check `/_studio/status` or `status_file` after edits to confirm reload succeeded without errors.
    - If the user wants custom interactive controls or a live drop/manipulate testbench alongside the asset, keep `<asset_dir>/model.xml` pure and load it via `mujoco.MjSpec.from_file("<asset_dir>/model.xml")` (`spec.worldbody.add_body(...).add_freejoint()` + `self.handle.set_model(spec, watch=[...])`) in a separate Studio workspace outside `<asset_dir>`.
-4. **Surface the interactive link(s) at the very end of the final response**:
-   - **Placement requirement**: Put `[MuJoCo Studio](sidecar://robotics/mujoco_studio/)` (and any fallback `[MuJoCo Studio Web](http://127.0.0.1:<http_port>/)` link) as the **very last thing at the end of your final response** — **after** the finished asset path, model summary, side-by-side comparison images, and turntable video. Never place the `sidecar://` link at the top or middle of the response, where the rendered pill is easy to overlook.
-   - Always include `[MuJoCo Studio](sidecar://robotics/mujoco_studio/)` (do not suppress it even if the host client does not auto-open `sidecar://` panes).
-   - If no active Node sidecar discovery file is present (so the sidecar aux-pane proxy is not running on the user's client), also include the direct local WebViewer URL `[MuJoCo Studio Web](http://127.0.0.1:<http_port>/)` (using `http_port` from `$SESSION_FILE` / `/_studio/status`) right alongside it at the end so the user can open the interactive 3D viewer in one click.
+4. **Present the preview**:
+   Report the finished asset, audit results, comparison images, and optional
+   turntable video. Read the actual `http_port` from the session file and link
+   to `http://127.0.0.1:<http_port>/`. On remote hosts, use the forwarded URL.
+   An Antigravity host may additionally provide its native sidecar link.
 
 [asset-standards]: ../../rules/mujoco_asset_standards.md

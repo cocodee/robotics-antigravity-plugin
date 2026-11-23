@@ -1,8 +1,8 @@
 ---
 name: mujoco-studio-sidecar
 description: >-
-  Runs the MuJoCo Studio Web sidecar (studiod daemon) to stream a live,
-  hot-reloading MuJoCo simulation into the Antigravity aux pane. Use
+  Runs the MuJoCo Studio daemon for live, hot-reloading simulation in a
+  local browser, with optional Antigravity sidecar integration. Use
   only when MuJoCo or mujoco_studio is used to launch studiod, scaffold a Studio
   workspace (messages.py, sim_plugin.py, viewer_plugin.py, scene.xml), check
   /_studio/status, or read captured SimHistory frames; load with mujoco-studio.
@@ -10,6 +10,14 @@ description: >-
 metadata:
   publisher: google
 ---
+
+## Host compatibility
+
+Read [agent runtime conventions](../../rules/agent_runtime.md) before first
+execution. Resolve scripts relative to this skill directory; no specific agent
+SDK, model vendor, or UI is required. Install only dependencies used by the
+selected operation. Preserve hardware safety limits and operator checkpoints.
+
 
 # MuJoCo Studio Web Sidecar Workflow
 
@@ -123,8 +131,7 @@ workspace-specific launch skill provides a bundled binary, verify
     if one already exists, otherwise creating `~/.venvs/mujoco-studio` outside
     `<workspace_dir>` with `python3 -m venv` (or `python -m venv` on Windows) or
     `uv venv` so version-controlled simulation folders stay clean and PEP 668
-    externally-managed system Python is not modified (request network access /
-    `BypassSandbox: true` if sandboxed):
+    externally-managed system Python is not modified (use the host permission mechanism if network access is restricted):
 
     ```bash
     pip install --upgrade "mujoco>=4.0.1"
@@ -167,9 +174,8 @@ launching; if a daemon is already running for the `<workspace_dir>` you need,
 reuse it. Prefer shell commands over workspace-scoped file-read tools when
 checking `$SESSION_FILE` or `runtime_dir` paths outside `<workspace_dir>`.
 
-Start the daemon as a background process (`IsDaemon: true`, passing
-`BypassSandbox: true` when sandboxed so loopback IPC with the sidecar is not
-isolated) using the Python interpreter that has `mujoco.studio` installed,
+Start the daemon with the host's background-process facility. Respect its
+permissions and allow loopback networking through supported configuration using the Python interpreter that has `mujoco.studio` installed,
 passing `<workspace_dir>` explicitly (always using the user-specified directory
 when one is given):
 
@@ -185,12 +191,9 @@ controls for its seed, drop height, and toy size, and a bake button. With no
 sim plugin builds the scene; when a scene XML exists, `studiod` passes its path
 and shows the file.
 
-Include the sidecar pill in your reply so the user can open the interactive 3D
-viewer in one click:
-
-```markdown
-[MuJoCo Studio](sidecar://robotics/mujoco_studio/)
-```
+Read `http_port` from the session file and provide the direct browser URL
+`http://127.0.0.1:<http_port>/`. For remote execution, use the host's port
+forwarding and report that URL. The Antigravity sidecar is an optional UI adapter.
 
 ## 3. Live In-Process Hot-Reload
 
@@ -218,7 +221,7 @@ in `<workspace_dir>`:
 After editing any file, inspect `status_file` from `$SESSION_FILE` via a shell
 command (works even in network-isolated sandboxes) or run
 `curl --noproxy '*' -s http://127.0.0.1:<control_port>/_studio/status`
-(`BypassSandbox: true` when sandboxed) to verify `"ok": true` across `scene`,
+to verify `"ok": true` across `scene`,
 `messages`, `sim_plugin`, and `viewer_plugin`. A failed reload keeps the last
 working code and reports the traceback there. Changes that need a restart, such
 as renaming a plugin class, are only logged by Studio, so restart the daemon
@@ -234,7 +237,7 @@ the 3D viewport, or clicks **Simulation -> Capture Frame for Agent Context**
 
 To capture a fresh snapshot programmatically from the running daemon at any
 time, read `control_port` from `$SESSION_FILE` and call (passing `--noproxy '*'`
-with `curl`, and `BypassSandbox: true` if sandboxed):
+with `curl`; use the host permission mechanism if loopback is restricted):
 
 *   `GET http://127.0.0.1:<control_port>/_studio/context?fresh=1`
 *   `POST http://127.0.0.1:<control_port>/_studio/context/capture` with

@@ -11,6 +11,14 @@ metadata:
   publisher: google
 ---
 
+## Host compatibility
+
+Read [agent runtime conventions](../../rules/agent_runtime.md) before first
+execution. Resolve scripts relative to this skill directory; no specific agent
+SDK, model vendor, or UI is required. Install only dependencies used by the
+selected operation. Preserve hardware safety limits and operator checkpoints.
+
+
 # MuJoCo Playground Sim-to-Real Composition ([`playground_sim2real.py`](scripts/playground_sim2real.py))
 
 Compose live MuJoCo Studio visualization, perception, IK, collision-aware planning, and visual servoing on `mujoco_playground`'s out-of-the-box `so101` and `yam` 50 Hz `DeviceLayer` stacks with identical code in `mode="sim"` and `mode="real"`:
@@ -33,8 +41,8 @@ Compose live MuJoCo Studio visualization, perception, IK, collision-aware planni
      place `viewer_plugin.py` / `messages.py` alongside it, launch `studiod.py`
      with `<playground_dir>/.venv/bin/python`
      (`<mujoco-studio-sidecar>/scripts/studiod.py --workspace_dir=<dir>`,
-     `IsDaemon: true`), include
-     `[MuJoCo Studio](sidecar://robotics/mujoco_studio/)`, and verify
+     the host's background-process option), include
+     `[MuJoCo Studio Web](http://127.0.0.1:<http_port>/)`, and verify
      `/_studio/status` after edits (or stream `PlaygroundSim2Real` rollouts to
      a Studio `ViewerHandle` via `env.attach_studio(handle)`).
 

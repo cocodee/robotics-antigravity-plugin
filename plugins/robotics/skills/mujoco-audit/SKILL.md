@@ -12,6 +12,14 @@ metadata:
   publisher: google
 ---
 
+## Host compatibility
+
+Read [agent runtime conventions](../../rules/agent_runtime.md) before first
+execution. Resolve scripts relative to this skill directory; no specific agent
+SDK, model vendor, or UI is required. Install only dependencies used by the
+selected operation. Preserve hardware safety limits and operator checkpoints.
+
+
 # MuJoCo Asset Audit, Verification & Remediation Skill
 
 Use this skill whenever you need to **audit, triage, validate, or remediate** a
@@ -28,7 +36,7 @@ materials), consult [`rules/mujoco_asset_standards.md`][asset-standards].
 > [!IMPORTANT]
 >
 > **Protect Your Context Window**:
-> * Read **only this `mujoco-audit/SKILL.md` upfront** (`1` `read_file` call). Do **NOT** read all of [`rules/mujoco_asset_standards.md`][asset-standards] upfront—first run `audit_scenarios.py` (§2) and consult [`rules/mujoco_asset_standards.md`][asset-standards] **only on demand** for the specific section(s) that fail.
+> * Read **only this `mujoco-audit/SKILL.md` upfront** (`1` the host's file/image inspection tool call). Do **NOT** read all of [`rules/mujoco_asset_standards.md`][asset-standards] upfront—first run `audit_scenarios.py` (§2) and consult [`rules/mujoco_asset_standards.md`][asset-standards] **only on demand** for the specific section(s) that fail.
 > * Do **NOT** read the `.py` implementation source of [`scripts/audit_scenarios.py`](scripts/audit_scenarios.py) or [`../mujoco-showcase-shot/scripts/render_showcase_shot.py`](../mujoco-showcase-shot/scripts/render_showcase_shot.py)—all CLI flags and Python return schemas are documented below.
 
 --------------------------------------------------------------------------------
@@ -50,29 +58,12 @@ Audit and remediate MuJoCo MJCF asset using mujoco-audit:
 Target(s) & optional notes:
 ```
 
-### Orchestration Rules (Parent Conversation vs. Worker Subagent)
+### Execution
 
-1.  **If you are the top-level / parent conversation**:
-
-    *   Spawn a `self` subagent (`Model: "inherit"`) via `invoke_subagent` to
-        execute this skill on the target asset(s), passing all user-specified
-        knobs (`Action`, `Depth`, `Articulations`, `Passive Mechanism Variant`,
-        and `Known Issues / Custom Focus`), your
-        `Parent Conversation ID: <parent_conv_id>`, and instructing the subagent
-        to read this `mujoco-audit/SKILL.md` first (consulting
-        [`rules/mujoco_asset_standards.md`][asset-standards] only on demand if a check
-        fails).
-    *   **When the subagent finishes**: Present the remediated asset path (or
-        triage verdict), a concise summary of the findings/fixes, and the
-        verification renders/videos to the user.
-
-2.  **If you are already the spawned subagent (or running inside a Blender
-    creation check)**:
-
-    *   Do **not** spawn a nested subagent—execute the audit/remediation
-        directly.
-    *   **Scratch Hygiene**: Place all temporary scripts and intermediate files
-        in `<ArtifactDir>/scratch/` (never inside the repository working tree).
+Execute the audit directly. Optional delegation may be used if available and
+permitted; it is not a prerequisite. Preserve all user-selected options and
+return the findings, finished paths, and verification images. Keep temporary
+scripts in `<ArtifactDir>/scratch/`, outside the target asset directory.
 
 --------------------------------------------------------------------------------
 
@@ -265,7 +256,7 @@ checked by `audit_scenarios.validate_static_and_mesh_hygiene(xml_path)`):
     (`UP_POSZ_FORWARD_POSX_RIGHT_NEGY`,
     [`rules/mujoco_asset_standards.md`][asset-standards] §3.1 & §6.1)**:
     *   **Real-world visual & dimension due diligence (reference product image,
-        specs & `search_web`)**:
+        specs & the host's web search tool)**:
         *   **Visual Comparison against Reference Photo**: Whenever a real-world
             reference photo or product image is provided, you **MUST visually
             compare** the rendered 6-view sheet of the updated asset against the
@@ -279,8 +270,8 @@ checked by `audit_scenarios.validate_static_and_mesh_hygiene(xml_path)`):
         *   **Dimension & Spec Cross-Check (Guard Against "Similar Object" Web
             Overwrites!)**: Always cross-check `vis_span_cm` against reference
             product specs, `<custom>` metadata, and the reference photo.
-            *   **When to use `search_web` & rescale
-                (`<mesh scale="sx sy sz"/>`)**: Use `search_web` when you can
+            *   **When to use the host's web search tool & rescale
+                (`<mesh scale="sx sy sz"/>`)**: Use the host's web search tool when you can
                 identify the **exact brand/SKU/model** shown in the reference
                 photo, **or** to check whether the asset has an obvious unit or
                 capture scale bug (e.g., a `2×` scale error like a `45 cm`
@@ -341,9 +332,8 @@ checked by `audit_scenarios.validate_static_and_mesh_hygiene(xml_path)`):
         `MjSpec` and calling
         `audit_scenarios.compute_collision_alignment_summary(model, data)` or
         checking ray clearance inside a Python `for` loop) and write out the
-        winning `.obj` files and `model.xml` in that single run. Likewise, set
-        `WaitMsBeforeAsync: 10000` on `run_command` and never poll
-        `manage_task("list" / "status")` in a busy loop.
+        winning `.obj` files and `model.xml` in that single run. Likewise, use the host process tool to wait for completion or collect
+        background output without busy polling.
     *   **Mandatory Per-Hull Color-Coded Visual Inspection & Semantic Part
         Audit**:
         *   Never inspect a multi-hull collision decomposition with all hulls
@@ -441,10 +431,10 @@ checked by `audit_scenarios.validate_static_and_mesh_hygiene(xml_path)`):
         physically realistic location, and never force uniform density across
         disparate materials or add nested internal "ballast" hulls just to drive
         `hull_density_cv` to `0`.
-    *   **Mandatory online & metadata due diligence (`search_web`)**: Never
+    *   **Mandatory online & metadata due diligence (the host's web search tool)**: Never
         blindly trust existing XML mass or guess from thin air. Check `<custom>`
         metadata and user-provided links first; **if none are provided, actively
-        use `search_web` to search retail/manufacturer listings for the exact
+        use the host's web search tool to search retail/manufacturer listings for the exact
         item (or comparable real-world objects of the same size and material)**
         to verify single-unit net weight and material composition, while
         checking for the four classic traps:
@@ -702,7 +692,7 @@ When asked to **remediate / fix** an asset (not just detect):
         Collision Hulls (`group="3"`, distinct per-hull colors + `3/4`
         Overlay)**, and **(Row 3) After Collision Hulls (`group="3"`, distinct
         per-hull colors + `3/4` Overlay)**. Always visually inspect the output
-        PNG with `read_file` to confirm zero camera cropping and zero visual
+        PNG with the host's file/image inspection tool to confirm zero camera cropping and zero visual
         mesh protrusion!
     *   **Optional 360° Filament PBR Turntable Video (`showcase_shot`)**: When
         running an in-depth audit/remediation or new asset showcase (and not

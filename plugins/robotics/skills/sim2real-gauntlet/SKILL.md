@@ -11,6 +11,14 @@ metadata:
   publisher: google
 ---
 
+## Host compatibility
+
+Read [agent runtime conventions](../../rules/agent_runtime.md) before first
+execution. Resolve scripts relative to this skill directory; no specific agent
+SDK, model vendor, or UI is required. Install only dependencies used by the
+selected operation. Preserve hardware safety limits and operator checkpoints.
+
+
 # Sim-to-Real Gauntlet (`robosim_gauntlet`)
 
 Library and CLI in `src/robosim_gauntlet` (put `src/` on `sys.path`; `cli.ensure_gl_backend()` preserves explicit `MUJOCO_GL` or selects packaged `egl`/`osmesa`). Reference consumers: [playground_tasks.py](examples/playground_tasks.py) and [color_blob_ik_controller.py](examples/color_blob_ik_controller.py).

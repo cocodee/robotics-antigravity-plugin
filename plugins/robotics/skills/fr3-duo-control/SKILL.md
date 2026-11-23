@@ -5,6 +5,14 @@ metadata:
   publisher: google
 ---
 
+## Host compatibility
+
+Read [agent runtime conventions](../../rules/agent_runtime.md) before first
+execution. Resolve scripts relative to this skill directory; no specific agent
+SDK, model vendor, or UI is required. Install only dependencies used by the
+selected operation. Preserve hardware safety limits and operator checkpoints.
+
+
 # Franka Research 3 Duo Control (`fr3_duo`)
 
 Operate and program a dual-arm **FR3 Duo** (`left`/`right` 7-DOF FR3 arms, Robotiq 2F-85 grippers, overhead ZED Mini stereo camera, and wrist RealSense D405 RGB cameras) under `R1–R16` in [safety_rules.md](references/safety_rules.md) and [hardware_limits.md](references/hardware_limits.md). For offline `mode="sim"`, canonical `MjSpec` scenes, and live MuJoCo Studio workflows, see [mujoco_sim.md](references/mujoco_sim.md).

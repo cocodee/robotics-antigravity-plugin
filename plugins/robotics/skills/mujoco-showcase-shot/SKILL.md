@@ -11,6 +11,14 @@ metadata:
   publisher: google
 ---
 
+## Host compatibility
+
+Read [agent runtime conventions](../../rules/agent_runtime.md) before first
+execution. Resolve scripts relative to this skill directory; no specific agent
+SDK, model vendor, or UI is required. Install only dependencies used by the
+selected operation. Preserve hardware safety limits and operator checkpoints.
+
+
 # MuJoCo Filament Showcase Shot Turntable Video Generator
 
 Use this skill whenever you want to generate a polished, studio-lit **360°

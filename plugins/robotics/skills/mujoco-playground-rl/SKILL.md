@@ -12,6 +12,14 @@ metadata:
   publisher: google
 ---
 
+## Host compatibility
+
+Read [agent runtime conventions](../../rules/agent_runtime.md) before first
+execution. Resolve scripts relative to this skill directory; no specific agent
+SDK, model vendor, or UI is required. Install only dependencies used by the
+selected operation. Preserve hardware safety limits and operator checkpoints.
+
+
 # MuJoCo Playground RL Task Authoring & Training ([`rl_task_check.py`](scripts/rl_task_check.py))
 
 Create, interactively verify in MuJoCo Studio, audit, train (`Impl.WARP` + RSL-RL), and deploy new RL tasks on any `mujoco_menagerie` robot (floating-base quadrupeds/humanoids or fixed-base arms) in `mujoco_playground`:
@@ -28,10 +36,10 @@ Create, interactively verify in MuJoCo Studio, audit, train (`Impl.WARP` + RSL-R
      hot-reload the robot `MjSpec` (publishing the spec from
      `SimPlugin.on_load_model` in `<workspace_dir>/sim_plugin.py`, checking
      standing keyframe stability, PD gains, contacts, and custom
-     `ViewerPlugin`s) in `[MuJoCo Studio](sidecar://robotics/mujoco_studio/)`
+     `ViewerPlugin`s) in `[MuJoCo Studio Web](http://127.0.0.1:<http_port>/)`
      by launching `<mujoco-studio-sidecar>/scripts/studiod.py
      --workspace_dir=<dir>` with `<playground_dir>/.venv/bin/python`
-     (`IsDaemon: true`, checking `/_studio/status` after edits) before batch
+     (the host's background-process option, checking `/_studio/status` after edits) before batch
      training.
    - Wire `reaf.simulation.torch` (`reaf_sim`) devices via `flat_scene.Component` (never pass `name=`, `nworld=`, or `xpu_device=`):
      - `reaf_sim.ActuatorDevice(targets=list(JOINT_NAMES), measurements=["joint_pos", "joint_vel"])` (`"robot"` -> `"robot/ctrl"`, `"robot/joint_pos"`, `"robot/joint_vel"`).

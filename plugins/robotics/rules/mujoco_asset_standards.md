@@ -499,10 +499,10 @@ are immediately distinguishable when group `3` (`3` + `T`) or group `4`
         directly to the actual exterior `class="collision"` geoms, **or**
     *   Provide an explicit `<inertial pos="x y z" quat="w x y z" mass="M"
         diaginertia="Ixx Iyy Izz"/>` on the `<body>`.
-4.  **Product-Link & Online Search (`search_web`) Mass/Dimension Calibration &
+4.  **Product-Link & Online Search (the host's web search tool) Mass/Dimension Calibration &
     Multi-Pack / Shipping-Weight Traps**: Always check `<custom>` metadata,
     reference specification sheets, or user-provided product links first; **if
-    none are provided, actively use `search_web` to look up retail/manufacturer
+    none are provided, actively use the host's web search tool to look up retail/manufacturer
     specs (dimensions, single-unit net weight, and material composition) for the
     exact item or comparable real-world objects**. Calibrate total mass and
     dimensions to the real physical item rather than guessing, while guarding

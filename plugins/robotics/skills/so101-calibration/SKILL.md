@@ -12,6 +12,14 @@ metadata:
   publisher: google
 ---
 
+## Host compatibility
+
+Read [agent runtime conventions](../../rules/agent_runtime.md) before first
+execution. Resolve scripts relative to this skill directory; no specific agent
+SDK, model vendor, or UI is required. Install only dependencies used by the
+selected operation. Preserve hardware safety limits and operator checkpoints.
+
+
 # SO-101 Stage 5 (Optional · Requires Fixed Camera) — Tabletop Touch-Down & 3D Hand-Eye Calibration
 
 After completing Stages 0–3 in [../so101-bringup/SKILL.md](../so101-bringup/SKILL.md) (including optional Stage 4: the USB bandwidth check and reference frames, which `R10` drift checks require) and following all safety rules (`R1–R16`) in [safety_rules.md](../so101-bringup/references/safety_rules.md), measure the physical tabletop height `z_table` and fit the 3D fixed/overhead camera projection matrix using [calibration_notes.md](references/calibration_notes.md):

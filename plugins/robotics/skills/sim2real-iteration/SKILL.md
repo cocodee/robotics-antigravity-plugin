@@ -11,6 +11,14 @@ metadata:
   publisher: google
 ---
 
+## Host compatibility
+
+Read [agent runtime conventions](../../rules/agent_runtime.md) before first
+execution. Resolve scripts relative to this skill directory; no specific agent
+SDK, model vendor, or UI is required. Install only dependencies used by the
+selected operation. Preserve hardware safety limits and operator checkpoints.
+
+
 # Sim-to-Real Controller Iteration
 
 Use alongside `sim2real-gauntlet` (`src/robosim_gauntlet` on `sys.path`) when tuning or debugging a manipulation controller for physical deployment. Never claim an improvement from single-seed runs, `T0`-only checks, or unpaired rollouts. Reference consumers: `../sim2real-gauntlet/examples/playground_tasks.py` and `../sim2real-gauntlet/examples/color_blob_ik_controller.py`.

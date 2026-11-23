@@ -5,6 +5,14 @@ metadata:
   publisher: google
 ---
 
+## Host compatibility
+
+Read [agent runtime conventions](../../rules/agent_runtime.md) before first
+execution. Resolve scripts relative to this skill directory; no specific agent
+SDK, model vendor, or UI is required. Install only dependencies used by the
+selected operation. Preserve hardware safety limits and operator checkpoints.
+
+
 # I2RT YAM Inverse Kinematics (`mink` + `daqp` via [`YamIk`](scripts/yam_ik.py))
 
 Use bundled [`YamIk`](scripts/yam_ik.py) (`pip install mink daqp mujoco`, `<1 ms`/solve on Linux & macOS) parameterized by `arm_type` (`"yam"` or `"yam_pro"`) and `gripper_type` (`"linear_4310"`, `"crank_4310"`, `"linear_3507"`, `"flexible_4310"`, etc.) via `combine_arm_and_gripper_xml` — **never** load standalone `yam.xml` when driving a gripper-equipped arm because bare `yam.xml` has `nsite = 0`:

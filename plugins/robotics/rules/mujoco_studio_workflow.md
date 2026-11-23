@@ -38,7 +38,7 @@ general-purpose Dear ImGui desktop apps):
     a Python scene, ask once whether to bake it into `scene.xml`.
 4.  Launch the MuJoCo Studio Web daemon in the background if not already
     running for that workspace, and include
-    `[MuJoCo Studio](sidecar://robotics/mujoco_studio/)` in your reply so the
+    `[MuJoCo Studio Web](http://127.0.0.1:<http_port>/)` in your reply so the
     user can open the 3D viewer in one click.
 5.  After editing any scene or plugin file, check `/_studio/status` (or
     `status_file` from the session file) to confirm hot-reload succeeded

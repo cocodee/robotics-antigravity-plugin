@@ -9,6 +9,14 @@ metadata:
   publisher: google
 ---
 
+## Host compatibility
+
+Read [agent runtime conventions](../../rules/agent_runtime.md) before first
+execution. Resolve scripts relative to this skill directory; no specific agent
+SDK, model vendor, or UI is required. Install only dependencies used by the
+selected operation. Preserve hardware safety limits and operator checkpoints.
+
+
 # Share Robotics Example to GitHub Discussions
 
 Packages a real-robot task or MuJoCo simulation demo into two drag-and-drop
@@ -19,8 +27,9 @@ Shares only to GitHub Discussions. Never creates a GitHub repo or requires `gh`.
 ## Steps
 
 1. **Gather inputs**:
-   * Compact transcript:
-     `<appDataDir>/brain/<conversation-id>/.system_generated/logs/transcript.jsonl`
+   * Optional transcript exported by the host or supplied by the user.
+     If unavailable, omit it and record that omission; do not search private
+     application directories or invent a conversation log.
    * Final workspace files (controller, robot/sim scripts, `scene.xml`, etc.),
      skipping `.env`, `.git`, `.venv`, `__pycache__`, `node_modules`, and
      `*.mcap`.
@@ -29,11 +38,11 @@ Shares only to GitHub Discussions. Never creates a GitHub repo or requires `gh`.
      prompt used, and setup (real robot model or sim-only + OS).
 
 2. **Scrub and package into `./share_post/`**:
-   * Copy the compact `transcript.jsonl` and final text files, redacting API
+   * Copy the optional compact `transcript.jsonl` and final text files, redacting API
      keys/tokens (`AIza...`, `GEMINI_API_KEY`, `ghp_...`, `sk-...`, `Bearer`)
      and replacing local home paths (`/Users/<name>`, `/home/<name>`) with `~`.
    * Write a short `README.md` (title, setup, prompt, file list) and zip
-     `README.md`, scrubbed `transcript.jsonl`, and final files into
+     `README.md`, the scrubbed transcript when available, and final files into
      `./share_post/bundle.zip` (must be under 25 MB).
    * Copy demo video(s) into `./share_post/`. If an `.mp4`/`.mov` exceeds 10 MB
      and `ffmpeg` is installed, compress it to H.264 (`yuv420p`) under 10 MB.

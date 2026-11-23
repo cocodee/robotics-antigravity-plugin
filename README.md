@@ -101,6 +101,18 @@ The same skills also ship inside the `mujoco` Python package at
 For skills that call Gemini perception models, set `GEMINI_API_KEY` in your
 environment before running.
 
+## Other agents and GPT clients
+
+The skills also support agents with local file and command execution. Export a
+flat skill bundle without the Antigravity UI adapter:
+
+```bash
+python3 tools/export_skills.py --output ./dist/robotics-skills
+```
+
+See [portable skills](docs/portable-skills.md) for compatibility, installation,
+runtime dependencies, and the boundary between local skills and remote tools.
+
 ## Share your examples
 
 Built a cool robot or MuJoCo simulation workflow? Post a link to your example

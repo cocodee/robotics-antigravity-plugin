@@ -11,6 +11,14 @@ metadata:
   publisher: google
 ---
 
+## Host compatibility
+
+Read [agent runtime conventions](../../rules/agent_runtime.md) before first
+execution. Resolve scripts relative to this skill directory; no specific agent
+SDK, model vendor, or UI is required. Install only dependencies used by the
+selected operation. Preserve hardware safety limits and operator checkpoints.
+
+
 # SO-101 Hardware Bring-Up, Camera Verification & Stage 3 "Hello World"
 
 Follow this staged workflow under `R1–R16` (auto-advancing across software, `--dry-run`, and read-only steps without extra confirmation prompts) to bring up an **SO-101 follower arm** (`so101_follower`, 6× Feetech STS3215 servos) and **1 or more cameras** (minimal setup: arm + 1 camera; recommended setup: fixed/overhead + wrist camera) using [safety_rules.md](references/safety_rules.md), [hardware_limits.md](references/hardware_limits.md), and [tabletop_pick_place.json](references/tasks/tabletop_pick_place.json). The fast path to Hello World is Stage 0 → 1 → 2 → 3; optional Stage 4 runs afterwards (required before Stage 5):
